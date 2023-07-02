@@ -4,7 +4,16 @@ from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value=None):
-        self.value = value
+        self._value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self.validate(new_value)
+        self._value = new_value
 
     def __str__(self):
         return str(self.value)
@@ -18,7 +27,7 @@ class Field:
     def __hash__(self):
         return hash(self.value)
 
-    def validate(self):
+    def validate(self, value):
         pass
 
 
@@ -28,24 +37,33 @@ class Name(Field):
 
 
 class Phone(Field):
-    def validate(self):
-        if not isinstance(self.value, str):
+    def validate(self, value):
+        if not isinstance(value, str):
             raise ValueError("Phone number must be a string")
-        if not self.value.isdigit():
+        if not value.isdigit():
             raise ValueError("Phone number must contain only digits")
-        if len(self.value) != 10:
+        if len(value) != 10:
             raise ValueError("Phone number must be 10 digits long")
 
 
 class Birthday(Field):
-    def validate(self):
-        if not isinstance(self.value, str):
+    def validate(self, value):
+        if not isinstance(value, str):
             raise ValueError("Birthday must be a string")
 
         try:
-            datetime.strptime(self.value, "%d.%m.%Y")
+            datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
             raise ValueError("Birthday must be in format DD.MM.YYYY")
+
+        @property
+        def value(self):
+            return self._value
+
+        @value.setter
+        def value(self, new_value):
+            self.validate(new_value)
+            self._value = new_value
 
         def days_to_birthday(self):
             if self.value is None:
@@ -95,3 +113,4 @@ class AddressBook(UserDict):
         num_pages = len(items) // page_size + 1
         for i in range(num_pages):
             yield items[i * page_size: (i + 1) * page_size]
+
